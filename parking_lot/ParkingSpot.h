@@ -3,15 +3,23 @@
 #include <memory>
 #include "Vehicle.h"
 
+enum class SpotType {
+	SMALL,
+	COMPACT,
+	LARGE,
+	SIZE // To get enum size
+};
+
 class ParkingSpot {
 
 private:
-	int spotID;
-	bool occupied;
-	std::shared_ptr<Vehicle> vehicle;
+	int m_spotID;
+	bool m_occupied;
+	SpotType m_spotType;
+	std::string m_numberPlate;
 
 public:
-	ParkingSpot(int id, bool isOccupied = false, std::shared_ptr<Vehicle> vehiclePtr = nullptr);
+	ParkingSpot(int id, SpotType type, bool isOccupied = false, std::string numberPlate);
 
 	int getSpotID() const;
 
@@ -21,11 +29,9 @@ public:
 
 	std::shared_ptr<Vehicle> getVehicle() const;
 
-	void setVehicle(std::shared_ptr<Vehicle> vehiclePtr) {
-		vehicle = std::move(vehiclePtr);
-	}
+	void setVehicle(std::shared_ptr<Vehicle> vehiclePtr);
 
-	bool operator==(const ParkingSpot& other) const {
-		return spotID == other.spotID;
-	}
+	SpotType ParkingSpot::getSpotType() const;
+
+	void setSpotType(SpotType type);
 };

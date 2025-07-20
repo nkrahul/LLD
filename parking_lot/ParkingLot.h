@@ -10,25 +10,27 @@
 #include <queue>
 #include <array>
 #include <unordered_map>
+#include "constants.h"
 
 class ParkingLot {
 
 private:
+	using pq_decl = std::priority_queue<int, std::vector<int>, std::greater<int>>;
+	static constexpr int NUM_TYPES = static_cast<int> (SpotType::SIZE);
+
 	static constexpr int NUM_LEVELS {3};
 	static int m_ticketCounter; // Static counter for ticket IDs
 	std::array<ParkingLevel, NUM_LEVELS> m_levels;
 	std::unordered_map<int, Ticket> m_activeTickets;
 	std::shared_ptr<FeeStrategy> m_feeStrategy;
-	std::array<std::priority_queue<std::shared_ptr<ParkingSpot>,
-									std::vector<std::shared_ptr<ParkingSpot>>,
-									Compare::ParkingSpotCompare>, NUM_LEVELS> m_emptySlots;
-
-	ParkingLot(std::shared_ptr<FeeStrategy> feeStrategy = std::make_shared<HourlyFeeStrategy>()) {
-		m_feeStrategy = feeStrategy; // Initialize with default fee strategy
-	};
+	std::array<std::array<pq_decl, NUM_TYPES>, CONSTANTS::NUM_LEVELS> m_emptySlots;
+	// Maintain priority queue of empty spot id(s) corresponding to levels.
+	ParkingLot();
 	~ParkingLot() = default; // Default destructor
+	pq_decl& getEmptySpots(int level, SpotType type);
+	pq_decl& getEmptyVehicleSLots(int level, VehicleType type);
 
-	public:
+public:
 	ParkingLot(const ParkingLot&) = delete; // Disable copy constructor
 	ParkingLot& operator=(const ParkingLot&) = delete; // Disable assignment operator
 	static ParkingLot& getInstance();

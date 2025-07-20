@@ -1,8 +1,14 @@
 #pragma once
 
-enum class VehicleType {
-	COMPACT, 
-	LARGE, 
-	TWO_WHEELER
+namespace VehicleConstants {
+
+	enum class VehicleType {
+		BIKE, 
+		CAR, 
+		SUV,
+		TRUCK,
+		BUS,
+		SIZE // To determine size
+	};
 };
 

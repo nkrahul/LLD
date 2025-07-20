@@ -2,8 +2,8 @@
 #include "Ticket.h"
 #include <stdexcept>
 
-float VehicleFeeStrategy::calculateFee(Ticket& ticket) {
-	auto it = vehicleRates.find(ticket.getVehicle().getVehicleType());
+float VehicleFeeStrategy::calculateFee(std::shared_ptr<Ticket> ticket) {
+	auto it = vehicleRates.find(ticket->getVehicle()->getVehicleType());
 	if (it == vehicleRates.end()) {
 		throw std::runtime_error("Unknown vehicle type");
 	}
