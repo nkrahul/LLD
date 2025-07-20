@@ -5,11 +5,12 @@
 class Vehicle {
 
 private:
-	const std::string numberPlate;
-	const VehicleType vehicleType;
+	const std::string m_numberPlate;
+	const VehicleType m_vehicleType;
 
 public:
 	Vehicle(const std::string& numberPlate, const VehicleType vehicleType);
-	std::string& getNumberPlate() const;
-	VehicleType getVehicleType() const;
+	~Vehicle() = default;
+	const std::string& getNumberPlate() const;
+	const VehicleType getVehicleType() const;
 };

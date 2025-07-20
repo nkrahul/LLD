@@ -1,93 +1,55 @@
 #include "ParkingLot.h"
 #include <stdexcept>
 #include <iostream>
+#include <sstream>
+#include <memory>
 
-int ParkingLot::ticketCounter = 0;
+int ParkingLot::m_ticketCounter = 1;
 
 ParkingLot& ParkingLot::getInstance() {
     static ParkingLot parkingLot; // Guaranteed to be destroyed, instantiated on first use
     return parkingLot;
 }
 
-bool ParkingLot::addParkingLevel() {
-    ParkingLevel newLevel(static_cast<int>(parkingLevels.size())); // Create a new level with a unique ID
-    auto result = parkingLevels.insert(newLevel);
-    if(!result.second) {
-        throw std::runtime_error("Parking level already exists.");
-    }
-
-    return result.second; // Returns true if the level was added, false if it already exists
-}
-
-bool ParkingLot::removeParkingLevel(int level) {
-    ParkingLevel levelToRemove(level);
-    auto it = parkingLevels.find(levelToRemove);
-    if (it != parkingLevels.end()) {
-        parkingLevels.erase(it);
-        return true; // Level was found and removed
-    }
-    return false; // Level not found
-}
-
 bool ParkingLot::parkVehicle(std::shared_ptr<Vehicle> vehicle) {
-    bool vehicleParked = false;
+    for(int i = 0 ; i < NUM_LEVELS; i++) {
+        if(m_emptySlots[i].empty()) {
+            std::cout << "No empty parking spot at level " << i << std::endl;
+            continue;
+        }
+        int emptySpotID = m_emptySlots[i].top(); // get lowest id empty slot
+        auto emptySlot = m_levels[i].getSpot(emptySpotID);
 
-    for(auto& level: emptySlots) {
-        if(level.second.empty()) {
-            std::cout << "No empty slots available in level " << level.first << std::endl;
-            continue; // Skip if there are no empty spots in this level
+        if(emptySlot.isOccupied()) {
+            std::stringstream msg;
+            msg << "Failed Attempt to Park: Slot " << emptySpotID << " at level " << i << " as it is already occupied.";
+            throw std::runtime_error(msg.str());
         }
 
-        for(auto spotID: level.second) {
-            try {
-              auto& parkingSpot = parkingLevels[level.first].getSpot(spotID);
-                if(!parkingSpot.isOccupied()) {
-                    parkingSpot.setOccupied(true);
-                    parkingSpot.setVehicle(vehicle);
-                    std::cout << "Vehicle parked in level " << level.first
-                              << ", spot ID: " << parkingSpot.getSpotID() << std::endl;
-                    Ticket newTicket(parkingSpot);
-                    activeTickets.insert({newTicket.getTicketID(), newTicket}); // Store the ticket in activeTickets
-                    vehicleParked = true;
-                    emptySlots[level.first].erase(spotID); // Remove the spot from empty slots
-                }
-            }
-            catch (const std::runtime_error& e) {
-                std::cerr << "Error accessing parking spot: " << e.what() << std::endl;
-                continue; // Skip to the next spot if the current one is not found
-            }
-        }
+        m_emptySlots[i].pop(); // remove from empty slot list
+        emptySlot.setVehicle(vehicle);
+        emptySlot.setOccupied(true);
+
+        Ticket ticket(emptySlot.getSpotID(), vehicle);
+        m_activeTickets.insert({ticket.getTicketID(), ticket});
+
+        std::cout << "Vehicle parked successfully at level " << i << ", slot " << emptySpotID
+                  << ". Ticket ID: " << ticket.getTicketID() << std::endl;
+        
+        return true;
     }
-    
-    return vehicleParked;
+    return false;
 }
 
 bool ParkingLot::unparkVehicle(int ticketID) {
-    bool foundTicket = false;
+   auto it = m_activeTickets.find(ticketID);
 
-    auto it = activeTickets.find(ticketID);
-    if (it != activeTickets.end()) {
-        foundTicket = true;
-        Ticket& ticket = it->second;
-        ParkingSpot& spot = ticket.getSpot();
+   if(it == m_activeTickets.end()) {
+        std::cerr << "Please provide a valid active Ticket.\n";
+        return false;
+   }
 
-        if (spot.isOccupied()) {
-            Vehicle *vehicle = spot.getVehicle().get();
-            float fee = feeStrategy->calculateFee(ticket); // Calculate the fee for the ticket
-            std::cout << "Unparking vehicle with number plate: " << vehicle->getNumberPlate()
-                      << ", Fee: " << fee << std::endl;
-
-            spot.setOccupied(false);
-            spot.setVehicle(nullptr); // Clear the vehicle from the spot
-
-            // Add the spot back to empty slots
-            emptySlots[spot.getSpotID()].insert(spot.getSpotID());
-            activeTickets.erase(it); // Remove the ticket from active tickets
-        } else {
-            std::cerr << "Parking spot is already empty." << std::endl;
-        }
-    } else {
-        std::cerr << "Ticket ID not found." << std::endl;
-    }
-    return foundTicket;
+   auto& ticket = it->second;
+   
+   
 }

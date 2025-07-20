@@ -7,20 +7,24 @@
 #include "FeeStrategy.h"
 #include "HourlyFeeStrategy.h"
 #include <memory>
-#include <set>
+#include <queue>
+#include <array>
 #include <unordered_map>
 
 class ParkingLot {
 
 private:
-	static int ticketCounter; // Static counter for ticket IDs
-	std::unordered_map<int, ParkingLevel> parkingLevels;
-	std::unordered_map<int, Ticket> activeTickets;
-	std::shared_ptr<FeeStrategy> feeStrategy;
-	std::unordered_map<int, std::unordered_set<int>> emptySlots; // Maps level ID to set of empty spot IDs 
+	static constexpr int NUM_LEVELS {3};
+	static int m_ticketCounter; // Static counter for ticket IDs
+	std::array<ParkingLevel, NUM_LEVELS> m_levels;
+	std::unordered_map<int, Ticket> m_activeTickets;
+	std::shared_ptr<FeeStrategy> m_feeStrategy;
+	std::array<std::priority_queue<std::shared_ptr<ParkingSpot>,
+									std::vector<std::shared_ptr<ParkingSpot>>,
+									Compare::ParkingSpotCompare>, NUM_LEVELS> m_emptySlots;
 
-	ParkingLot() {
-		feeStrategy = std::make_unique<HourlyFeeStrategy>(); // Initialize with default fee strategy
+	ParkingLot(std::shared_ptr<FeeStrategy> feeStrategy = std::make_shared<HourlyFeeStrategy>()) {
+		m_feeStrategy = feeStrategy; // Initialize with default fee strategy
 	};
 	~ParkingLot() = default; // Default destructor
 
@@ -29,13 +33,13 @@ private:
 	ParkingLot& operator=(const ParkingLot&) = delete; // Disable assignment operator
 	static ParkingLot& getInstance();
 
-	bool addParkingLevel();
-	bool removeParkingLevel(int level);
 	bool parkVehicle(std::shared_ptr<Vehicle> vehicle);
 	bool unparkVehicle(int ticketID);
 	void setFeeStrategy(std::shared_ptr<FeeStrategy> strategy) {
-		feeStrategy = std::move(strategy);
+		if(strategy) {
+			m_feeStrategy = strategy;
+		}
 	}
 	void displayParkingLotStatus() const;
-	std::unordered_set<ParkingSpot, Compare::ParkingSpotCompare>& getEmptySlots() const;
+	std::shared_ptr<ParkingSpot> getEmptyParkingSpot() const;
 };

@@ -1,14 +1,14 @@
 #include "Vehicle.h"
 
 Vehicle::Vehicle(const std::string& numberPlate, const VehicleType vehicleType)
-	: numberPlate(numberPlate), vehicleType(vehicleType) {}
+	: m_numberPlate(numberPlate), m_vehicleType(vehicleType) {}
 
 Vehicle::~Vehicle() {}
 
-std::string& Vehicle::getNumberPlate() const {
-	return const_cast<std::string&>(numberPlate);
+const std::string& Vehicle::getNumberPlate() const {
+	return m_numberPlate;
 }
 
-VehicleType Vehicle::getVehicleType() const {
-	return vehicleType;
+const VehicleType Vehicle::getVehicleType() const {
+	return m_vehicleType;
 }

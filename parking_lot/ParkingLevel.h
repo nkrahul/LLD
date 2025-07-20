@@ -3,17 +3,17 @@
 #include <unordered_map>
 #include <stdexcept>
 #include "ParkingSpot.h"
-#include <unordered_set>
+#include <vector>
 #include "compare.h"
+#include <array>
 
 class ParkingLevel {
 private:
-	int level;
-	std::unordered_set<ParkingSpot, Compare::ParkingSpotCompare> parkingSpots;
+	static constexpr int NUM_SPOTS {10};
+	int m_level;
+	std::array<ParkingSpot, NUM_SPOTS> m_spots; 
 
 public:
-	bool addParkingSpot(int id);
-	bool removeParkingSpot(int id);
 	ParkingLevel(int lvl);
 	int getLevel() const;
 	ParkingSpot& getSpot(int id);
