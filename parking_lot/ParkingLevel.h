@@ -12,10 +12,10 @@ class ParkingLevel {
 private:
 	int m_level;
 	std::array<ParkingSpot, CONSTANTS::NUM_SPOTS> m_spots; 
-	ParkingLevel() = default;
-	~ParkingLevel() = default;
-
+	
 public:
+    ParkingLevel() = default;
+	~ParkingLevel() = default;
 	ParkingLevel(int lvl);
 	int getLevel() const;
 	ParkingSpot& getSpot(int id);

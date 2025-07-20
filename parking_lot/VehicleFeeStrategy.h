@@ -14,5 +14,5 @@ private:
 	};
 
 public:
-	float calculateFee(Ticket& ticket) override;
+	float calculateFee(std::shared_ptr<Ticket> ticket) override;
 };

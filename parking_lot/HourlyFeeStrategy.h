@@ -5,7 +5,7 @@
 
 class HourlyFeeStrategy : public FeeStrategy {
 private:
-	std::map<VehicleType, float> vehicleRates = {
+	std::map<VehicleType, float> hourlyRates = {
 		{VehicleType::CAR, 20.0f},
 		{VehicleType::BIKE, 10.0f},
 		{VehicleType::TRUCK, 30.0f},
@@ -14,6 +14,6 @@ private:
 	};
 	
 public:
-	float calculateFee(std::shared_ptr<Ticket> ticket) override;
+	float calculateFee(Ticket& ticket) override;
 	~HourlyFeeStrategy() override = default;
 };

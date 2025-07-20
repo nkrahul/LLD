@@ -3,14 +3,14 @@
 #include <stdexcept>
 #include <chrono>
 
-float HourlyFeeStrategy::calculateFee(std::shared_ptr<Ticket> ticket) {
-	auto it = hourlyRates.find(ticket->getVehicle()->getVehicleType());
+float HourlyFeeStrategy::calculateFee(Ticket& ticket) {
+	auto it = hourlyRates.find(ticket.getVehicle()->getVehicleType());
 	if (it == hourlyRates.end()) {
 		throw std::runtime_error("Unknown vehicle type");
 	}
 
 	auto now = std::chrono::system_clock::now();
-	auto& entryTime = ticket->getEntryTime();
+	auto& entryTime = ticket.getEntryTime();
 	auto duration = now - entryTime;
 	auto hours = std::chrono::duration_cast<std::chrono::hours>(duration).count();
 	if (hours < 0) {

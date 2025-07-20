@@ -3,6 +3,7 @@
 #include <iostream>
 #include <sstream>
 #include <memory>
+#include <string>
 
 int ParkingLot::m_ticketCounter = 1;
 
@@ -55,9 +56,10 @@ ParkingLot::pq_decl& ParkingLot::getEmptyVehicleSLots(int level, VehicleType typ
   }
 }
 
-ParkingLot::ParkingLot()
+ParkingLot::ParkingLot(std::shared_ptr<FeeStrategy> feeStrategy)
+    : m_levels{ParkingLevel(0), ParkingLevel(1), ParkingLevel(2)}
 {
-    m_feeStrategy = std::make_shared<HourlyFeeStrategy>();
+    m_feeStrategy = feeStrategy;
     for (int i = 0; i < CONSTANTS::NUM_LEVELS; i++) {
         int j = 0;
         while (j++ < CONSTANTS::NUM_SMALL_SPOTS) {
@@ -80,67 +82,66 @@ ParkingLot& ParkingLot::getInstance() {
     return parkingLot;
 }
 
-bool ParkingLot::parkVehicle(std::shared_ptr<Vehicle> vehicle) {
+Ticket ParkingLot::parkVehicle(std::shared_ptr<Vehicle> vehicle) {
     for(int i = 0 ; i < NUM_LEVELS; i++) {
         if(m_emptySlots[i].empty()) {
             std::cout << "No empty parking spot at level " << i << std::endl;
             continue;
         }
 
-        int emptySpotID = getEmptySpots(i, vehicle->getVehicleType())
-        auto emptySlot = m_levels[i].getSpot(emptySpotID);
+        auto emptySlots = getEmptyVehicleSLots(i, vehicle->getVehicleType());
 
-        if(emptySlot.isOccupied()) {
+        if(emptySlots.empty()) {
             std::stringstream msg;
-            msg << "Failed Attempt to Park: Slot " << emptySpotID << " at level " << i << " as it is already occupied.";
+            msg << "Failed Attempt to Park at level " << i << " as it is already occupied.";
             throw std::runtime_error(msg.str());
         }
+        int emptySlotID = emptySlots.top();
+        emptySlots.pop();
+        auto slot = m_levels[i].getSpot(emptySlotID);
+        slot.setOccupied(true);
+        slot.setVehicle(std::move(vehicle));
 
-        m_emptySlots[i].pop(); // remove from empty slot list
-        emptySlot.setVehicle(vehicle);
-        emptySlot.setOccupied(true);
-
-        Ticket ticket(emptySlot.getSpotID(), vehicle);
+        Ticket ticket(i, slot.getSpotID(), vehicle->getNumberPlate());
         m_activeTickets.insert({ticket.getTicketID(), ticket});
 
-        std::cout << "Vehicle parked successfully at level " << i << ", slot " << emptySpotID
+        std::cout << "Vehicle number " << vehicle->getNumberPlate() << " parked successfully at level " << i << ", slot " << emptySlotID
                   << ". Ticket ID: " << ticket.getTicketID() << std::endl;
         
-        return true;
+        return ticket;
     }
-    return false;
+    return Ticket(-1, -1, "-1");
 }
 
-bool ParkingLot::unparkVehicle(int ticketID) {
+std::shared_ptr<Vehicle> ParkingLot::unparkVehicle(int ticketID) {
    auto it = m_activeTickets.find(ticketID);
 
    if(it == m_activeTickets.end()) {
         std::cerr << "Please provide a valid active Ticket.\n";
-        return false;
+        return nullptr;
    }
 
    auto& ticket = it->second;
+   auto slot = m_levels[ticket.getLevelID()].getSpot(ticket.getSpotID());
+   getEmptyVehicleSLots(ticket.getLevelID(), slot.getVehicle()->getVehicleType()).push(ticket.getSpotID()); // slot made available
+   float fee = m_feeStrategy->calculateFee(ticket);
 
+   std::cout << "Vehicle with number " << slot.getVehicle()->getNumberPlate() << "unparked from level " <<
+                ticket.getLevelID() << " From spot " << ticket.getSpotID() << ", with fee " << fee << std::endl; 
+   m_activeTickets.erase(ticket.getTicketID());
+
+   return slot.getVehicle();
 }
 
-void ParkingLot::displayParkingLotStatus() const {
+void ParkingLot::displayParkingLotStatus() {
     for (int i = 0; i < CONSTANTS::NUM_LEVELS; ++i) {
         std::cout << "Level " << i << ":\n";
-        for (int j = 1; j <= m_levels[i].getNumSpots(); ++j) {
+        
+        for(int j = 0; j < m_levels[i].getNumSpots(); j++) {
+            std::string none {"None"};
             auto& spot = m_levels[i].getSpot(j);
-            std::cout << "  Spot " << j << " [";
-            switch (spot.getSpotType()) {
-                case SpotType::SMALL: std::cout << "Small"; break;
-                case SpotType::COMPACT: std::cout << "Compact"; break;
-                case SpotType::LARGE: std::cout << "Large"; break;
-            }
-            std::cout << "] - ";
-            if (spot.isOccupied()) {
-                std::cout << "Occupied";
-            } else {
-                std::cout << "Empty";
-            }
-            std::cout << std::endl;
+            std::cout << "++ spotID " << spot.getSpotID() << ", vehicle "
+                      << (spot.isOccupied() ? spot.getVehicle()->getNumberPlate() : none) << std::endl;
         }
     }
 }

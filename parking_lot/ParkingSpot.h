@@ -16,10 +16,10 @@ private:
 	int m_spotID;
 	bool m_occupied;
 	SpotType m_spotType;
-	std::string m_numberPlate;
+	std::shared_ptr<Vehicle> m_vehicle;
 
 public:
-	ParkingSpot(int id, SpotType type, bool isOccupied = false, std::string numberPlate);
+	ParkingSpot(int id, SpotType type, bool isOccupied = false, std::shared_ptr<Vehicle> vehiclePtr = nullptr);
 
 	int getSpotID() const;
 
@@ -31,7 +31,7 @@ public:
 
 	void setVehicle(std::shared_ptr<Vehicle> vehiclePtr);
 
-	SpotType ParkingSpot::getSpotType() const;
+	SpotType getSpotType() const;
 
 	void setSpotType(SpotType type);
 };

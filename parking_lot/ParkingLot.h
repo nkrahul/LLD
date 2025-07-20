@@ -25,7 +25,7 @@ private:
 	std::shared_ptr<FeeStrategy> m_feeStrategy;
 	std::array<std::array<pq_decl, NUM_TYPES>, CONSTANTS::NUM_LEVELS> m_emptySlots;
 	// Maintain priority queue of empty spot id(s) corresponding to levels.
-	ParkingLot();
+	ParkingLot(std::shared_ptr<FeeStrategy> = std::make_shared<HourlyFeeStrategy>());
 	~ParkingLot() = default; // Default destructor
 	pq_decl& getEmptySpots(int level, SpotType type);
 	pq_decl& getEmptyVehicleSLots(int level, VehicleType type);
@@ -35,13 +35,13 @@ public:
 	ParkingLot& operator=(const ParkingLot&) = delete; // Disable assignment operator
 	static ParkingLot& getInstance();
 
-	bool parkVehicle(std::shared_ptr<Vehicle> vehicle);
-	bool unparkVehicle(int ticketID);
+	Ticket parkVehicle(std::shared_ptr<Vehicle> vehicle);
+	std::shared_ptr<Vehicle> unparkVehicle(int ticketID);
 	void setFeeStrategy(std::shared_ptr<FeeStrategy> strategy) {
 		if(strategy) {
 			m_feeStrategy = strategy;
 		}
 	}
-	void displayParkingLotStatus() const;
+	void displayParkingLotStatus();
 	std::shared_ptr<ParkingSpot> getEmptyParkingSpot() const;
 };

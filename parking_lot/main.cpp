@@ -1,31 +1,31 @@
 #include<iostream>
+#include<memory>
 #include "ParkingLot.h"
 #include "Vehicle.h"
 
-
 int main() {
-    try {
-        ParkingLot& parkingLot = ParkingLot::getInstance();
+   ParkingLot& parkingLot = ParkingLot::getInstance();
+   auto strategy = std::make_shared<HourlyFeeStrategy>(); 
+   parkingLot.setFeeStrategy(strategy);
 
-        // Add a parking level
-        for(int i = 0; i < 2; i++) {
-            parkingLot.addParkingLevel();
-        }
+   std::map<Ticket, std::shared_ptr<Vehicle>> ticket_map;
 
-        // Create a vehicle and park it
-        auto vehicle = std::make_shared<Vehicle>(VehicleType::COMPACT);
-        if (parkingLot.parkVehicle(vehicle)) {
-            std::cout << "Vehicle parked successfully." << std::endl;
-        } else {
-            std::cout << "Failed to park vehicle." << std::endl;
-        }
+   auto car = std::make_shared<Vehicle>("ABC123", VehicleType::CAR);
+   auto bike = std::make_shared<Vehicle>("XYZ789", VehicleType::BIKE);
+   auto truck = std::make_shared<Vehicle>("TRK456", VehicleType::TRUCK);
 
-        // Display parking lot status
-        parkingLot.displayParkingLotStatus();
+   auto t1 = parkingLot.parkVehicle(car);
+   auto t2 = parkingLot.parkVehicle(bike);
+   auto t3 = parkingLot.parkVehicle(truck);
+   
 
-    } catch (const std::exception& e) {
-        std::cerr << "Exception: " << e.what() << std::endl;
-    }
+   parkingLot.displayParkingLotStatus();
 
-    return 0;
+   parkingLot.unparkVehicle(t1.getTicketID());
+   parkingLot.unparkVehicle(t2.getTicketID());
+   parkingLot.unparkVehicle(t3.getTicketID());
+
+   parkingLot.displayParkingLotStatus();
+
+   return 0;
 }

@@ -11,15 +11,18 @@ private:
 	static int m_ticketCounter; // Static counter for ticket IDs
 	int m_ticketID;
 	Time m_entryTime;
+	int m_level;
 	int m_spotID;
-	std::shared_ptr<Vehicle> m_vehicle;
+	std::string m_numberPlate;
 
 public:
     ~Ticket() = default;
-	Ticket(int spotID, std::shared_ptr<Vehicle>);
+	Ticket(const int level, const int spotID, const std::string& numberPlate);
 	Ticket(const Ticket&);
 	Time& getEntryTime() const;
 	int getTicketID() const;
-	std::shared_ptr<ParkingSpot> getSpot();
+	int getLevelID() const;
+	int getSpotID() const;
 	std::shared_ptr<Vehicle> getVehicle() const;
+	std::string getNumberPlate() const;
 };

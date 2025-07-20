@@ -1,7 +1,5 @@
 #pragma once
 
-namespace VehicleConstants {
-
 	enum class VehicleType {
 		BIKE, 
 		CAR, 
@@ -10,5 +8,4 @@ namespace VehicleConstants {
 		BUS,
 		SIZE // To determine size
 	};
-};
 

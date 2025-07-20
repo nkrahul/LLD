@@ -1,6 +1,6 @@
 #include "Vehicle.h"
 
-Vehicle::Vehicle(const std::string& numberPlate, const VehicleType vehicleType)
+Vehicle::Vehicle(const std::string numberPlate, const VehicleType vehicleType)
 	: m_numberPlate(numberPlate), m_vehicleType(vehicleType) {}
 
 Vehicle::~Vehicle() {}
